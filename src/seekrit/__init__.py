@@ -13,7 +13,7 @@ from ._client import Client, DEFAULT_API_URL
 from ._crypto import TokenKey, decrypt_secret, materialize, secret_aad
 from .errors import SeekritApiError, SeekritCryptoError, SeekritError
 
-__version__ = "0.1.0"  # x-release-please-version
+__version__ = "0.2.0"  # x-release-please-version
 
 __all__ = [
     "Client",
