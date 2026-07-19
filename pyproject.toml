@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "seekrit"
+version = "0.1.0"
+description = "Read-path SDK for seekrit — resolve and decrypt secrets client-side with a service token."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [{ name = "seekrit" }]
+keywords = ["seekrit", "secrets", "secrets-manager", "encryption", "zero-knowledge"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security :: Cryptography",
+]
+dependencies = ["cryptography>=41"]
+
+[project.urls]
+Homepage = "https://seekrit.dev"
+Documentation = "https://seekrit.dev/docs"
+Source = "https://github.com/seekritdev/python-sdk"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/seekrit"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/seekrit", "tests", "testdata", "README.md"]

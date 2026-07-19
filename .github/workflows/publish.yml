@@ -1,0 +1,39 @@
+# Publishes to PyPI via OIDC trusted publishing (no long-lived token). Runs in
+# THIS public repo — trusted publishing authenticates the workflow itself, so it
+# can't live in the private monorepo. This file is overwritten on each sync.
+#
+# Triggered by a version tag (`vX.Y.Z`) pushed to this repo, or manually.
+#
+# One-time setup on PyPI: add a Trusted Publisher for project `seekrit` →
+#   Owner: seekritdev   Repo: python-sdk   Workflow: publish.yml
+# (leave the environment field blank to match this workflow).
+name: Publish to PyPI
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # mint the OIDC token for trusted publishing
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify before publishing
+        run: |
+          pip install .
+          python -m unittest discover -s tests
+      - name: Build sdist + wheel
+        run: |
+          pip install build
+          python -m build
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1

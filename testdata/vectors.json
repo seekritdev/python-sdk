@@ -1,0 +1,65 @@
+{
+  "token": "skt_r36AUXMxoX0xkQoH8vimHN_MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg1bTaK96XZQzEUpfGe5dlc-sp3n7mF8WpZNVJweEJZ06hRANCAATgUoWLRDgyG0qsUzdQXzr1VSL-p9kSp_zhAULqF2qHUAWDPcuoX-f4JTUX6lyzPEs_0chQ9nKvgmEJUpXx9_q5",
+  "tokenId": "skt_r36AUXMxoX0xkQoH8vimHN",
+  "publicKeyJwk": "{\"key_ops\":[],\"ext\":true,\"kty\":\"EC\",\"x\":\"4FKFi0Q4MhtKrFM3UF869VUi_qfZEqf84QFC6hdqh1A\",\"y\":\"BYM9y6hf5_glNRfqXLM8Sz_RyFD2cq-CYQlSlfH3-rk\",\"crv\":\"P-256\"}",
+  "resolve": {
+    "scope": {
+      "orgId": "org_test",
+      "orgSlug": "acme",
+      "appId": "app_test",
+      "appSlug": "web",
+      "envId": "env_apptest0000000000001",
+      "envSlug": "production"
+    },
+    "layers": [
+      {
+        "source": "group",
+        "environmentId": "env_grouptest0000000001",
+        "slug": "production",
+        "groupSlug": "shared",
+        "wrappedDek": "wd1.BEoGSn3SoICO6tA13EjveZHvxTTRVijE0OUpBkzVkFU28q_jfgY4P9IkyrpjMVJK27zogh61rwC_NUBjoe2TKhY.5EI1On9xCtVuntRHMA6xFA.JNqiqNRxDpNN3hkP.8RxEujnGaEIUIVq9VVcOZlpC07-gxgyz25VCtffNZWSRh8J8iFfMA6p-_ubXSfv5",
+        "secrets": [
+          {
+            "name": "SHARED",
+            "ciphertext": "sc1.4XNyaS_ilRPDTlIg.LhAGzqP_cm4fx_dKeST8_3NITle_77x0Qjo"
+          },
+          {
+            "name": "DATABASE_URL",
+            "ciphertext": "sc1.-THIwVQA7yVq6SWt.1RaVPddl8QDuhc2wValcmtArCxafHBCAk24Fv00gB_FNc6k"
+          },
+          {
+            "name": "UNICODE",
+            "ciphertext": "sc1.7qB3RU8qhHKpqwbB.BsKeZYWDv4Qp9cWIB0I684pLazslk2nFtIq-OvgDjIaTaw3Pbw"
+          }
+        ]
+      },
+      {
+        "source": "app",
+        "environmentId": "env_apptest0000000000001",
+        "slug": "production",
+        "wrappedDek": "wd1.BMywXqAVq3Ee3XX7mGBt2KLcRRwPLQn9FjlXc19Z8HNdDPsg-KyKLwg_uz4tgQ8MdVevMgtjfBkOiqmAi7ENI2Y.FLBNZ3z8-8CnYoBN-Azr9g.2x8wkp6BSw9QjnG2.3b32qenHIHC92eCehRW6QGWNFTlIe3nTKPje0WsRFWSHkjV6PYIxCXmlQaAJJkp3",
+        "secrets": [
+          {
+            "name": "SHARED",
+            "ciphertext": "sc1.QF697pJ61KM9Xqj2.HH9PNlW7aIIWZvpLm6yc8ZCRRemlxoOS"
+          },
+          {
+            "name": "API_KEY",
+            "ciphertext": "sc1.x4G_KqJP7ags8SBf.obw89lhKqcMAy1vzjdTjch88R7Trx9JtFWS2Rw"
+          },
+          {
+            "name": "EMPTY",
+            "ciphertext": "sc1.qdub6o6QejpKH97e.KFe1fiDvtHF3agstKhL5ng"
+          }
+        ]
+      }
+    ]
+  },
+  "expectedManagedValues": {
+    "SHARED": "from-app",
+    "DATABASE_URL": "postgres://group/db",
+    "UNICODE": "héllo-🌍-\n-tab\tend",
+    "API_KEY": "sk-app-12345",
+    "EMPTY": ""
+  }
+}
