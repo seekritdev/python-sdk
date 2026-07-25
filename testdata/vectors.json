@@ -1,7 +1,7 @@
 {
-  "token": "skt_r36AUXMxoX0xkQoH8vimHN_MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg1bTaK96XZQzEUpfGe5dlc-sp3n7mF8WpZNVJweEJZ06hRANCAATgUoWLRDgyG0qsUzdQXzr1VSL-p9kSp_zhAULqF2qHUAWDPcuoX-f4JTUX6lyzPEs_0chQ9nKvgmEJUpXx9_q5",
-  "tokenId": "skt_r36AUXMxoX0xkQoH8vimHN",
-  "publicKeyJwk": "{\"key_ops\":[],\"ext\":true,\"kty\":\"EC\",\"x\":\"4FKFi0Q4MhtKrFM3UF869VUi_qfZEqf84QFC6hdqh1A\",\"y\":\"BYM9y6hf5_glNRfqXLM8Sz_RyFD2cq-CYQlSlfH3-rk\",\"crv\":\"P-256\"}",
+  "token": "skt_6EYgmoh8LuiPPAbM0SaVtc_MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgra6e_i8D2dIWlz-43EVbrHz-g698-kxY22MCp95L7VGhRANCAATA4nkyQKLq4hD5YvzXLtNtKAK_g-H4LF260zk0bInSWMbDfx0vTTtOg0tRWoDYWbuIN0vb1YMZ5z13xH5aBsDx",
+  "tokenId": "skt_6EYgmoh8LuiPPAbM0SaVtc",
+  "publicKeyJwk": "{\"key_ops\":[],\"ext\":true,\"kty\":\"EC\",\"x\":\"wOJ5MkCi6uIQ-WL81y7TbSgCv4Ph-CxdutM5NGyJ0lg\",\"y\":\"xsN_HS9NO06DS1FagNhZu4g3S9vVgxnnPXfEfloGwPE\",\"crv\":\"P-256\"}",
   "resolve": {
     "scope": {
       "orgId": "org_test",
@@ -17,19 +17,19 @@
         "environmentId": "env_grouptest0000000001",
         "slug": "production",
         "groupSlug": "shared",
-        "wrappedDek": "wd1.BEoGSn3SoICO6tA13EjveZHvxTTRVijE0OUpBkzVkFU28q_jfgY4P9IkyrpjMVJK27zogh61rwC_NUBjoe2TKhY.5EI1On9xCtVuntRHMA6xFA.JNqiqNRxDpNN3hkP.8RxEujnGaEIUIVq9VVcOZlpC07-gxgyz25VCtffNZWSRh8J8iFfMA6p-_ubXSfv5",
+        "wrappedDek": "wd1.BGAAVA2nxO1UzcRZA_7ubZ9nLAGSf_Fc_6y07AHlv4N_q8dhQ0z4dwMHqUUaKPkkSnH8rnWkjnitlKHRmuIvoz8.dJ0ALJ9Wejh6nYiKM3adOA.VFgZWwqtT_ly6gP4.RIcWNi6id_QO9NtmCU4iFUEX9U9fUlqn2UNgmkgunpU_eVnKgMf6q8ui1PxcEBiw",
         "secrets": [
           {
             "name": "SHARED",
-            "ciphertext": "sc1.4XNyaS_ilRPDTlIg.LhAGzqP_cm4fx_dKeST8_3NITle_77x0Qjo"
+            "ciphertext": "sc1.oIjnQEJskdJ_nweV.MGETgRWPDkwhHm9e_jp567-b19Fn8DJohrU"
           },
           {
             "name": "DATABASE_URL",
-            "ciphertext": "sc1.-THIwVQA7yVq6SWt.1RaVPddl8QDuhc2wValcmtArCxafHBCAk24Fv00gB_FNc6k"
+            "ciphertext": "sc1.Fo69NaVLlUDFtGsk.tr8o0e7mMSB7DWkfZuv0eLOsNq7Fm-3dd2zOiPSXSHiwXbg"
           },
           {
             "name": "UNICODE",
-            "ciphertext": "sc1.7qB3RU8qhHKpqwbB.BsKeZYWDv4Qp9cWIB0I684pLazslk2nFtIq-OvgDjIaTaw3Pbw"
+            "ciphertext": "sc1.hu_o1qPHzmeJrT0q.5jIWUj9fTvGXjyeSyhtOMdvlWRenXqNy9F2uYg3XVgui0CYmdA"
           }
         ]
       },
@@ -37,19 +37,31 @@
         "source": "app",
         "environmentId": "env_apptest0000000000001",
         "slug": "production",
-        "wrappedDek": "wd1.BMywXqAVq3Ee3XX7mGBt2KLcRRwPLQn9FjlXc19Z8HNdDPsg-KyKLwg_uz4tgQ8MdVevMgtjfBkOiqmAi7ENI2Y.FLBNZ3z8-8CnYoBN-Azr9g.2x8wkp6BSw9QjnG2.3b32qenHIHC92eCehRW6QGWNFTlIe3nTKPje0WsRFWSHkjV6PYIxCXmlQaAJJkp3",
+        "wrappedDek": "wd1.BHVKzCsJECbpyULjVjFe-vw5mmKEJ26MZz02wc1RfzgozIRx9CrCFJJ0RkYWT_iuvAAG2rN7WNg5uNt0RQ6X14Q.Wfuvupy_B16u453L04UpSA.YPq62FodkXeezDd3.HgXwlx5gZRAnqmyk0WSz4HW9qVrb-DfEsvD76HKXkgigAShwBJ9g1qiVtSUgUgCo",
         "secrets": [
           {
             "name": "SHARED",
-            "ciphertext": "sc1.QF697pJ61KM9Xqj2.HH9PNlW7aIIWZvpLm6yc8ZCRRemlxoOS"
+            "ciphertext": "sc1.hVO-Xgq16bV52VDQ.gePrTLVlrjIINJCs_gomYWnwqS4sD1CP"
           },
           {
             "name": "API_KEY",
-            "ciphertext": "sc1.x4G_KqJP7ags8SBf.obw89lhKqcMAy1vzjdTjch88R7Trx9JtFWS2Rw"
+            "ciphertext": "sc1.KpB-GlAGsWiNUN5p.PY5HnW1tOA-ZCBSSslnqFld4sPGWLujiW_j8gQ"
           },
           {
             "name": "EMPTY",
-            "ciphertext": "sc1.qdub6o6QejpKH97e.KFe1fiDvtHF3agstKhL5ng"
+            "ciphertext": "sc1.qR6EjHPQkz6mZI37.PKrdRmvhq-N5bqYwWaK5Dg"
+          },
+          {
+            "name": "REFERENCING",
+            "ciphertext": "sc1.mc6E1roINLiI5H5U.jkSlIFcn3NxJLgStBEdpelOJ_aB9pouUIOu5YX7yIB0G_maOkBRA2UpFsFoXI1mRppEWwg"
+          },
+          {
+            "name": "ESCAPED_REF",
+            "ciphertext": "sc1.obgYCJstXaXFUJJg.tcI9_IOzvpSaXF96WPBowUKxph3dJ_7GvHs"
+          },
+          {
+            "name": "DANGLING_REF",
+            "ciphertext": "sc1.VJCnlvqadm3F6lge.kONf1u13yEIWc8pBjSs_XQDR9kmGi0wOTH35QE_QM8qJEhLuDg"
           }
         ]
       }
@@ -60,6 +72,169 @@
     "DATABASE_URL": "postgres://group/db",
     "UNICODE": "héllo-🌍-\n-tab\tend",
     "API_KEY": "sk-app-12345",
-    "EMPTY": ""
+    "EMPTY": "",
+    "REFERENCING": "url=postgres://group/db;shared=from-app",
+    "ESCAPED_REF": "${SHARED}",
+    "DANGLING_REF": "build-${NOT_A_SECRET}"
+  },
+  "interpolation": {
+    "cases": [
+      {
+        "name": "substitutes a reference",
+        "input": {
+          "HOST": "db.internal",
+          "URL": "postgres://app@${HOST}:5432/db"
+        },
+        "expected": {
+          "HOST": "db.internal",
+          "URL": "postgres://app@db.internal:5432/db"
+        },
+        "unresolved": []
+      },
+      {
+        "name": "expands recursively, repeats, and forward references",
+        "input": {
+          "ADDR": "${HOST}:${PORT}",
+          "HOST": "db.internal",
+          "PORT": "5432",
+          "PAIR": "${ADDR}|${ADDR}"
+        },
+        "expected": {
+          "ADDR": "db.internal:5432",
+          "HOST": "db.internal",
+          "PORT": "5432",
+          "PAIR": "db.internal:5432|db.internal:5432"
+        },
+        "unresolved": []
+      },
+      {
+        "name": "leaves unknown references literal and reports them",
+        "input": {
+          "TAG": "build-${GITHUB_SHA}",
+          "OTHER": "${NOPE}-${GITHUB_SHA}"
+        },
+        "expected": {
+          "TAG": "build-${GITHUB_SHA}",
+          "OTHER": "${NOPE}-${GITHUB_SHA}"
+        },
+        "unresolved": [
+          "GITHUB_SHA",
+          "NOPE"
+        ]
+      },
+      {
+        "name": "expands around an unknown reference",
+        "input": {
+          "HOST": "db.internal",
+          "URL": "${HOST}/${MISSING}"
+        },
+        "expected": {
+          "HOST": "db.internal",
+          "URL": "db.internal/${MISSING}"
+        },
+        "unresolved": [
+          "MISSING"
+        ]
+      },
+      {
+        "name": "$${NAME} escapes to a literal ${NAME}",
+        "input": {
+          "NAME": "expanded",
+          "TEMPLATE": "$${NAME} stays, ${NAME} goes"
+        },
+        "expected": {
+          "NAME": "expanded",
+          "TEMPLATE": "${NAME} stays, expanded goes"
+        },
+        "unresolved": []
+      },
+      {
+        "name": "leaves shell-style, non-name, and unterminated forms alone",
+        "input": {
+          "FOO": "value",
+          "DEFAULTED": "${FOO:-fallback}",
+          "POSITIONAL": "${1}",
+          "DOTTED": "${a.b}",
+          "EMPTY_REF": "${}",
+          "UNTERMINATED": "${FOO",
+          "PASSWORD": "p$$w0rd$"
+        },
+        "expected": {
+          "FOO": "value",
+          "DEFAULTED": "${FOO:-fallback}",
+          "POSITIONAL": "${1}",
+          "DOTTED": "${a.b}",
+          "EMPTY_REF": "${}",
+          "UNTERMINATED": "${FOO",
+          "PASSWORD": "p$$w0rd$"
+        },
+        "unresolved": []
+      },
+      {
+        "name": "recognizes a reference after an unterminated one",
+        "input": {
+          "A": "a",
+          "T": "${ ${A}"
+        },
+        "expected": {
+          "A": "a",
+          "T": "${ a"
+        },
+        "unresolved": []
+      },
+      {
+        "name": "handles empty values and multibyte text",
+        "input": {
+          "EMPTY": "",
+          "A": "héllo-🌍",
+          "T": "🌍${A}${EMPTY}🌍"
+        },
+        "expected": {
+          "EMPTY": "",
+          "A": "héllo-🌍",
+          "T": "🌍héllo-🌍🌍"
+        },
+        "unresolved": []
+      },
+      {
+        "name": "a diamond is not a cycle",
+        "input": {
+          "BASE": "b",
+          "LEFT": "${BASE}-l",
+          "RIGHT": "${BASE}-r",
+          "TOP": "${LEFT}+${RIGHT}"
+        },
+        "expected": {
+          "BASE": "b",
+          "LEFT": "b-l",
+          "RIGHT": "b-r",
+          "TOP": "b-l+b-r"
+        },
+        "unresolved": []
+      }
+    ],
+    "cycles": [
+      {
+        "name": "self reference",
+        "input": {
+          "A": "x${A}"
+        }
+      },
+      {
+        "name": "direct cycle",
+        "input": {
+          "A": "${B}",
+          "B": "${A}"
+        }
+      },
+      {
+        "name": "indirect cycle",
+        "input": {
+          "A": "${B}",
+          "B": "${C}",
+          "C": "${A}"
+        }
+      }
+    ]
   }
 }

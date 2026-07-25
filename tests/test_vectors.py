@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives.serialization import (
 )
 
 import seekrit
-from seekrit import SeekritCryptoError
+from seekrit import SeekritCryptoError, SeekritReferenceError
 
 VECTORS = json.loads((Path(__file__).parent.parent / "testdata" / "vectors.json").read_text())
 
@@ -47,6 +47,31 @@ class VectorTest(unittest.TestCase):
         merged = seekrit.materialize(VECTORS["resolve"], key)
         self.assertEqual(merged["UNICODE"], "héllo-🌍-\n-tab\tend")
         self.assertEqual(merged["EMPTY"], "")
+
+    def test_references_expand_over_the_merged_set(self):
+        key = seekrit.TokenKey.parse(VECTORS["token"])
+        merged = seekrit.materialize(VECTORS["resolve"], key)
+        self.assertEqual(merged["REFERENCING"], "url=postgres://group/db;shared=from-app")
+        self.assertEqual(merged["ESCAPED_REF"], "${SHARED}")
+        self.assertEqual(merged["DANGLING_REF"], "build-${NOT_A_SECRET}")
+
+    def test_interpolate_false_returns_stored_text(self):
+        key = seekrit.TokenKey.parse(VECTORS["token"])
+        merged = seekrit.materialize(VECTORS["resolve"], key, interpolate=False)
+        self.assertEqual(merged["REFERENCING"], "url=${DATABASE_URL};shared=${SHARED}")
+
+    def test_shared_interpolation_cases(self):
+        for case in VECTORS["interpolation"]["cases"]:
+            with self.subTest(case["name"]):
+                out = seekrit.interpolate_secrets(case["input"])
+                self.assertEqual(out.values, case["expected"])
+                self.assertEqual(out.unresolved, case["unresolved"])
+
+    def test_shared_interpolation_cycles(self):
+        for case in VECTORS["interpolation"]["cycles"]:
+            with self.subTest(case["name"]):
+                with self.assertRaises(SeekritReferenceError):
+                    seekrit.interpolate_secrets(case["input"])
 
     def test_wrong_token_cannot_unwrap(self):
         # A valid, well-formed token holding the wrong key must not silently

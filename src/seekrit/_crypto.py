@@ -26,6 +26,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives.serialization import load_der_private_key
 
+from ._interpolate import interpolate_secrets
 from .errors import SeekritCryptoError
 
 _HKDF_INFO = b"seekrit/wrap-dek/v1"
@@ -110,11 +111,17 @@ def decrypt_secret(dek: bytes, blob: str, aad: bytes) -> str:
     return plaintext.decode("utf-8")
 
 
-def materialize(resolve_response: dict, key: TokenKey) -> Dict[str, str]:
+def materialize(
+    resolve_response: dict, key: TokenKey, *, interpolate: bool = True
+) -> Dict[str, str]:
     """Decrypt every layer and merge by precedence.
 
     ``layers`` arrive lowest precedence first (composed groups, then the app
     environment); later layers overwrite earlier ones on a name collision.
+
+    ``${OTHER_SECRET}`` references are then expanded over the merged result (so a
+    reference sees whichever layer won the name). Pass ``interpolate=False`` to
+    get the stored text instead.
     """
     merged: Dict[str, str] = {}
     for layer in resolve_response["layers"]:
@@ -124,4 +131,6 @@ def materialize(resolve_response: dict, key: TokenKey) -> Dict[str, str]:
             merged[secret["name"]] = decrypt_secret(
                 dek, secret["ciphertext"], secret_aad(env_id, secret["name"])
             )
-    return merged
+    if not interpolate:
+        return merged
+    return interpolate_secrets(merged).values

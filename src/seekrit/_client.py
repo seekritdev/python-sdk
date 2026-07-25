@@ -27,6 +27,8 @@ class Client:
         overrides: optional ``{group_slug: env_slug}`` map to pull a different
             environment slice of a composed group (the ``?with=`` override).
         timeout: per-request timeout in seconds.
+        interpolate: expand ``${OTHER_SECRET}`` references in resolved values
+            (default ``True``); ``False`` returns the stored text verbatim.
     """
 
     def __init__(
@@ -36,6 +38,7 @@ class Client:
         api_url: Optional[str] = None,
         overrides: Optional[Mapping[str, str]] = None,
         timeout: float = 30.0,
+        interpolate: bool = True,
     ) -> None:
         token = token or os.environ.get("SEEKRIT_TOKEN")
         if not token:
@@ -45,10 +48,11 @@ class Client:
         self._api_url = (api_url or os.environ.get("SEEKRIT_API_URL") or DEFAULT_API_URL).rstrip("/")
         self._overrides = dict(overrides or {})
         self._timeout = timeout
+        self._interpolate = interpolate
 
     def resolve(self) -> Dict[str, str]:
         """Fetch, decrypt, and merge; return ``{NAME: value}``."""
-        return materialize(self._fetch(), self._key)
+        return materialize(self._fetch(), self._key, interpolate=self._interpolate)
 
     def get(self, name: str, default: Optional[str] = None) -> Optional[str]:
         """Return a single secret's value, or ``default`` if it is not present."""

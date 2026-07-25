@@ -15,6 +15,22 @@ class SeekritCryptoError(SeekritError):
     """
 
 
+class SeekritReferenceError(SeekritError):
+    """A ``${OTHER_SECRET}`` reference could not be expanded.
+
+    Raised only for cases with no possible answer: a reference cycle, or an
+    expansion that grows without bound. An *unknown* reference is not an error —
+    it is left as literal text (see :func:`seekrit.interpolate_secrets`).
+
+    Attributes:
+        code: ``"CYCLE"`` or ``"TOO_LARGE"``.
+    """
+
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.code = code
+
+
 class SeekritApiError(SeekritError):
     """The resolve API returned a non-2xx response.
 
