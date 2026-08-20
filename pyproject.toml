@@ -27,6 +27,9 @@ httpx = ["httpx>=0.24"]
 # credential scoping. Brings httpx along, since the middleware is only
 # useful paired with the transport.
 langchain = ["httpx>=0.24", "langchain>=1.0"]
+# `seekrit.pydantic_ai` — a WrapperToolset that scopes each tool call. Brings
+# httpx along for the same reason.
+pydantic-ai = ["httpx>=0.24", "pydantic-ai>=1.0"]
 
 [project.urls]
 Homepage = "https://seekrit.dev"

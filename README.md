@@ -168,6 +168,33 @@ the model. Pair it with `require_scope=True` on the transport so a lost context
 fails closed. Details:
 <https://seekrit.dev/docs/guides/agent-proxy/in-process>.
 
+### Pydantic AI
+
+`pip install 'seekrit[pydantic-ai]'` adds a `WrapperToolset` that scopes each
+tool call:
+
+```python
+from pydantic_ai import Agent
+from pydantic_ai.toolsets import FunctionToolset
+from seekrit.pydantic_ai import SeekritToolset, Scope, use_scope
+
+agent = Agent(
+    "openai:gpt-5.6-terra",
+    deps_type=Deps,
+    toolsets=[
+        SeekritToolset(
+            FunctionToolset([refund, search]),
+            scope=lambda deps: {"tenants": deps.tenant},
+            tools={"refund": ["STRIPE_SECRET_KEY"]},
+        )
+    ],
+)
+
+# A toolset only wraps tools; wrap the run to cover the model call too.
+with use_scope(Scope(overrides={"tenants": tenant})):
+    result = await agent.run(prompt, deps=Deps(tenant=tenant))
+```
+
 Because it runs in your process, this is a weaker boundary than the
 [egress proxy](https://seekrit.dev/docs/guides/agent-proxy). What it does buy:
 the value exists only inside one HTTP call, so it never reaches model context, a

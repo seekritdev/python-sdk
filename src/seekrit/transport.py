@@ -42,7 +42,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import Callable, Dict, List, Mapping, Optional, Sequence, Tuple
+from typing import Callable, Dict, List, Mapping, Optional, Protocol, Sequence, Tuple, Union
 
 try:
     import httpx
@@ -61,6 +61,8 @@ __all__ = [
     "SeekritTransport",
     "AsyncSeekritTransport",
     "AllowRule",
+    "ClientSource",
+    "ResolveSource",
     "Scope",
     "current_scope",
     "use_scope",
@@ -72,6 +74,18 @@ _RECOMPUTED = ("content-length", "transfer-encoding")
 InjectHook = Callable[[Dict[str, object]], None]
 RefuseHook = Callable[[SeekritSubstitutionError], None]
 ScopeSource = Callable[[], Optional[Scope]]
+
+
+class ResolveSource(Protocol):
+    """The one method a resolve source needs. :class:`seekrit.Client` satisfies it."""
+
+    def resolve(self) -> Dict[str, str]:  # pragma: no cover - a structural type
+        ...
+
+
+#: Where resolved values come from. A single source is bound to one set of group
+#: overrides, so a per-tenant setup passes a **callable** of the overrides.
+ClientSource = Union[ResolveSource, Callable[[Optional[Mapping[str, str]]], ResolveSource]]
 
 
 def refusal_response(error: SeekritSubstitutionError) -> "httpx.Response":
@@ -134,7 +148,7 @@ class _Resolver:
     def __init__(
         self,
         *,
-        client: Optional[Client],
+        client: Optional["ResolveSource"],
         token: Optional[str],
         api_url: Optional[str],
         ttl_seconds: float,
@@ -145,11 +159,31 @@ class _Resolver:
         self._ttl = max(0.0, ttl_seconds)
         self._cache: Dict[str, Tuple[float, Dict[str, str]]] = {}
 
-    def _client_for(self, scope: Optional[Scope]) -> Client:
+    def _client_for(self, scope: Optional[Scope]) -> "ResolveSource":
+        """The resolve source for one scope.
+
+        The awkward case is a caller who passed a single ``client`` *and* a scope
+        with group overrides: that client is bound to its own overrides and
+        cannot be re-scoped, so silently using it would resolve the wrong tenant.
+        If a token is available we build a correctly-scoped client; if not, say
+        exactly that rather than surfacing "no service token" from three frames
+        down.
+        """
         overrides = scope.overrides if scope else None
+        if callable(self._client):
+            return self._client(overrides)
         if not overrides and self._client is not None:
             return self._client
-        return Client(self._token, api_url=self._api_url, overrides=overrides)
+        try:
+            return Client(self._token, api_url=self._api_url, overrides=overrides)
+        except SeekritError:
+            if self._client is not None:
+                raise SeekritError(
+                    "a scope with group overrides cannot reuse a single client, which is bound "
+                    "to its own overrides: pass client as a callable of the overrides, or pass "
+                    "token= so a scoped client can be built"
+                ) from None
+            raise
 
     def _cached(self, key: str) -> Optional[Dict[str, str]]:
         hit = self._cache.get(key)
@@ -328,8 +362,11 @@ class SeekritTransport(httpx.BaseTransport):
         rules: full rules, host by host. This is the wire shape of a signed
             ``ap1.`` bundle's ``rules``, so a verified bundle's list can be
             passed straight in (see :meth:`AllowRule.from_dict`).
-        client: a pre-built :class:`seekrit.Client`, used when no per-request
-            scope overrides are in play.
+        client: where resolved values come from. A :class:`seekrit.Client` (or
+            anything with ``resolve()``) serves scopes that do not re-scope; pass
+            a **callable** of the overrides when ``scope`` returns ``with``
+            overrides, since one client is bound to one set of them. Omit it and
+            a client is built from ``token`` / ``$SEEKRIT_TOKEN`` per scope.
         token: ``skt_...`` service token. Defaults to ``$SEEKRIT_TOKEN``.
         api_url: API base URL. Defaults to ``$SEEKRIT_API_URL``.
         scope: called once per request instead of reading the ambient scope.
@@ -364,7 +401,7 @@ class SeekritTransport(httpx.BaseTransport):
         *,
         allow: Optional[Mapping[str, Sequence[str]]] = None,
         rules: Optional[Sequence[AllowRule]] = None,
-        client: Optional[Client] = None,
+        client: Optional[ClientSource] = None,
         token: Optional[str] = None,
         api_url: Optional[str] = None,
         scope: Optional[ScopeSource] = None,
@@ -422,7 +459,7 @@ class AsyncSeekritTransport(httpx.AsyncBaseTransport):
         *,
         allow: Optional[Mapping[str, Sequence[str]]] = None,
         rules: Optional[Sequence[AllowRule]] = None,
-        client: Optional[Client] = None,
+        client: Optional[ClientSource] = None,
         token: Optional[str] = None,
         api_url: Optional[str] = None,
         scope: Optional[ScopeSource] = None,

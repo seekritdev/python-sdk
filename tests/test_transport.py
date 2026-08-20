@@ -334,6 +334,60 @@ class ScopeTests(unittest.TestCase):
 
 
 @unittest.skipUnless(HAVE_HTTPX, "httpx extra not installed")
+class ClientSourceTests(unittest.TestCase):
+    """Where values come from, when a scope re-scopes the resolve."""
+
+    def _client(self, **kwargs):
+        seen, mock = recorder()
+        return seen, httpx.Client(transport=SeekritTransport(transport=mock, **kwargs))
+
+    def test_a_callable_client_is_given_the_overrides(self):
+        asked = []
+
+        def factory(overrides):
+            asked.append(overrides)
+            tenant = (overrides or {}).get("tenants", "none")
+            return FakeClient({"OPENAI_API_KEY": f"sk-{tenant}"})
+
+        seen, client = self._client(
+            allow={"api.openai.com": ["OPENAI_API_KEY"]}, client=factory
+        )
+        headers = {"authorization": "Bearer {{seekrit:OPENAI_API_KEY}}"}
+        with use_scope(Scope(overrides={"tenants": "northwind"})):
+            client.get("https://api.openai.com/v1/x", headers=headers)
+        self.assertEqual(seen["headers"]["authorization"], "Bearer sk-northwind")
+
+        with use_scope(Scope(overrides={"tenants": "lumen"})):
+            client.get("https://api.openai.com/v1/x", headers=headers)
+        self.assertEqual(seen["headers"]["authorization"], "Bearer sk-lumen")
+        self.assertEqual(asked, [{"tenants": "northwind"}, {"tenants": "lumen"}])
+
+    def test_a_single_client_cannot_serve_a_re_scoped_request(self):
+        # Silently using it would resolve the wrong tenant, and falling through
+        # to $SEEKRIT_TOKEN would fail three frames down with "no service token".
+        _, client = self._client(
+            allow={"api.openai.com": ["OPENAI_API_KEY"]}, client=FakeClient()
+        )
+        with use_scope(Scope(overrides={"tenants": "northwind"})):
+            with self.assertRaises(SeekritError) as caught:
+                client.get(
+                    "https://api.openai.com/v1/x",
+                    headers={"authorization": "Bearer {{seekrit:OPENAI_API_KEY}}"},
+                )
+        self.assertIn("cannot reuse a single client", str(caught.exception))
+
+    def test_a_single_client_still_serves_an_unscoped_request(self):
+        seen, client = self._client(
+            allow={"api.openai.com": ["OPENAI_API_KEY"]}, client=FakeClient()
+        )
+        client.get(
+            "https://api.openai.com/v1/x",
+            headers={"authorization": "Bearer {{seekrit:OPENAI_API_KEY}}"},
+        )
+        self.assertEqual(seen["headers"]["authorization"], "Bearer sk-live-abc")
+
+
+@unittest.skipUnless(HAVE_HTTPX, "httpx extra not installed")
 class CachingTests(unittest.TestCase):
     def _client(self, resolver, ttl):
         _, mock = recorder()
