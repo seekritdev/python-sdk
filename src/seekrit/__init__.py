@@ -20,6 +20,7 @@ from .errors import (
     SeekritCryptoError,
     SeekritError,
     SeekritReferenceError,
+    SeekritSubstitutionError,
 )
 
 __version__ = "0.4.0"  # x-release-please-version
@@ -39,5 +40,6 @@ __all__ = [
     "SeekritApiError",
     "SeekritCryptoError",
     "SeekritReferenceError",
+    "SeekritSubstitutionError",
     "__version__",
 ]

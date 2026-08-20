@@ -19,6 +19,15 @@ classifiers = [
 ]
 dependencies = ["cryptography>=41"]
 
+[project.optional-dependencies]
+# `seekrit.transport` — the httpx transports that substitute
+# {{seekrit:NAME}} placeholders into outbound requests.
+httpx = ["httpx>=0.24"]
+# `seekrit.langchain` — agent middleware for per-request and per-tool
+# credential scoping. Brings httpx along, since the middleware is only
+# useful paired with the transport.
+langchain = ["httpx>=0.24", "langchain>=1.0"]
+
 [project.urls]
 Homepage = "https://seekrit.dev"
 Documentation = "https://seekrit.dev/docs"

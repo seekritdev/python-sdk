@@ -236,5 +236,199 @@
         }
       }
     ]
+  },
+  "substitution": {
+    "note": "Placeholder substitution over plaintext alone — no crypto involved. Every implementation of the engine (apps/proxy/src/substitute.rs and the fetch/httpx shims in the language SDKs) runs these, so the rules can never drift apart. The lookup each harness must install: a name in `denied` returns Denied, otherwise a name present in `values` returns that Value, otherwise Unknown. A case has either `expected` + `names`, or `error`.",
+    "cases": [
+      {
+        "name": "substitutes a placeholder and reports the name",
+        "input": "Bearer {{seekrit:OPENAI_API_KEY}}",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [],
+        "expected": "Bearer sk-live",
+        "names": [
+          "OPENAI_API_KEY"
+        ]
+      },
+      {
+        "name": "passes text with no placeholder through untouched",
+        "input": "nothing to see here",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [],
+        "expected": "nothing to see here",
+        "names": []
+      },
+      {
+        "name": "repeats one name as many times as it appears",
+        "input": "{{seekrit:OPENAI_API_KEY}}::{{seekrit:OPENAI_API_KEY}}",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [],
+        "expected": "sk-live::sk-live",
+        "names": [
+          "OPENAI_API_KEY"
+        ]
+      },
+      {
+        "name": "reports two injected names, sorted",
+        "input": "{\"a\":\"{{seekrit:STRIPE_KEY}}\",\"b\":\"{{seekrit:OPENAI_API_KEY}}\"}",
+        "values": {
+          "OPENAI_API_KEY": "sk-live",
+          "STRIPE_KEY": "sk_test_1"
+        },
+        "denied": [],
+        "expected": "{\"a\":\"sk_test_1\",\"b\":\"sk-live\"}",
+        "names": [
+          "OPENAI_API_KEY",
+          "STRIPE_KEY"
+        ]
+      },
+      {
+        "name": "a denied name aborts the pass",
+        "input": "{{seekrit:SOME_OTHER}}",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [
+          "SOME_OTHER"
+        ],
+        "error": {
+          "code": "denied",
+          "name": "SOME_OTHER"
+        }
+      },
+      {
+        "name": "an allowed but unresolved name aborts the pass",
+        "input": "{{seekrit:MISSING}}",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [],
+        "error": {
+          "code": "unresolved",
+          "name": "MISSING"
+        }
+      },
+      {
+        "name": "a denial wins even when a valid placeholder came first",
+        "input": "{{seekrit:OPENAI_API_KEY}} then {{seekrit:SOME_OTHER}}",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [
+          "SOME_OTHER"
+        ],
+        "error": {
+          "code": "denied",
+          "name": "SOME_OTHER"
+        }
+      },
+      {
+        "name": "an unterminated marker is literal",
+        "input": "value {{seekrit:OPENAI_API_KEY",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [],
+        "expected": "value {{seekrit:OPENAI_API_KEY",
+        "names": []
+      },
+      {
+        "name": "an illegal character in the name makes the marker literal",
+        "input": "{{seekrit:bad-name}}",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [],
+        "expected": "{{seekrit:bad-name}}",
+        "names": []
+      },
+      {
+        "name": "an empty name is not a placeholder",
+        "input": "{{seekrit:}}",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [],
+        "expected": "{{seekrit:}}",
+        "names": []
+      },
+      {
+        "name": "whitespace inside the marker is not a placeholder",
+        "input": "{{ seekrit:OPENAI_API_KEY }}",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [],
+        "expected": "{{ seekrit:OPENAI_API_KEY }}",
+        "names": []
+      },
+      {
+        "name": "nesting is not expanded recursively",
+        "input": "{{seekrit:{{seekrit:OPENAI_API_KEY}}}}",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [],
+        "expected": "{{seekrit:sk-live}}",
+        "names": [
+          "OPENAI_API_KEY"
+        ]
+      },
+      {
+        "name": "a substituted value is never rescanned",
+        "input": "{{seekrit:OPENAI_API_KEY}}",
+        "values": {
+          "OPENAI_API_KEY": "{{seekrit:STRIPE_KEY}}",
+          "STRIPE_KEY": "sk_test_1"
+        },
+        "denied": [],
+        "expected": "{{seekrit:STRIPE_KEY}}",
+        "names": [
+          "OPENAI_API_KEY"
+        ]
+      },
+      {
+        "name": "extra closing braces stay literal",
+        "input": "{{seekrit:OPENAI_API_KEY}}}}",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [],
+        "expected": "sk-live}}",
+        "names": [
+          "OPENAI_API_KEY"
+        ]
+      },
+      {
+        "name": "multibyte text around a placeholder survives",
+        "input": "🌍 {{seekrit:OPENAI_API_KEY}} héllo",
+        "values": {
+          "OPENAI_API_KEY": "sk-live"
+        },
+        "denied": [],
+        "expected": "🌍 sk-live héllo",
+        "names": [
+          "OPENAI_API_KEY"
+        ]
+      },
+      {
+        "name": "an empty value substitutes to nothing",
+        "input": "[{{seekrit:EMPTY}}]",
+        "values": {
+          "EMPTY": ""
+        },
+        "denied": [],
+        "expected": "[]",
+        "names": [
+          "EMPTY"
+        ]
+      }
+    ]
   }
 }

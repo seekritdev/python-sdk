@@ -101,6 +101,79 @@ already has (those names are then listed in `loaded.skipped`).
 This guards the summary, not your own cells — `print(os.environ["API_KEY"])`
 still writes a secret into the notebook. Strip outputs before committing.
 
+## Hold a placeholder instead of a key
+
+`seekrit.transport` substitutes `{{seekrit:NAME}}` placeholders into outbound
+requests, so a provider key is never in your source, your `.env`, or
+`os.environ`:
+
+```bash
+pip install 'seekrit[httpx]'
+```
+
+```python
+import httpx
+from openai import OpenAI
+from seekrit.transport import SeekritTransport
+
+client = OpenAI(
+    api_key="{{seekrit:OPENAI_API_KEY}}",
+    http_client=httpx.Client(
+        transport=SeekritTransport(allow={"api.openai.com": ["OPENAI_API_KEY"]}),
+    ),
+)
+```
+
+One transport covers every Python agent toolkit, because they all reach the
+network through the same `http_client=`: LangChain's `ChatOpenAI`, Pydantic AI's
+`OpenAIProvider`, the OpenAI Agents SDK's `set_default_openai_client`,
+LlamaIndex's `OpenAI`. Use `AsyncSeekritTransport` for the async client.
+
+The allowlist is the boundary, and it is default-deny: a name that is not
+permitted toward that host, method, and path is refused, and so is a name that
+did not resolve. Neither sends the request.
+
+A refusal answers with the same **403** the proxy answers with, carrying
+`x-seekrit-refusal` and the secret's name but never its value. That is on
+purpose: a provider SDK wraps anything its HTTP layer raises into an opaque
+connection error *and retries it*, so raising would turn a denied placeholder
+into "Connection error" after six attempts. Pass `refusal="raise"` to get the typed error
+instead.
+
+### LangChain middleware
+
+`pip install 'seekrit[langchain]'` adds agent middleware that scopes credentials
+to a single tool call:
+
+```python
+from langchain.agents import create_agent
+from seekrit.langchain import SeekritCredentials
+
+agent = create_agent(
+    model=model,
+    tools=[refund, search],
+    context_schema=Context,
+    middleware=[
+        SeekritCredentials(
+            scope=lambda ctx: {"tenants": ctx.tenant},
+            tools={"refund": ["STRIPE_SECRET_KEY"]},
+        ),
+    ],
+)
+```
+
+`refund` may substitute the Stripe key; `search` may substitute nothing. `scope`
+also picks which tenant's secrets to resolve, per request, without rebuilding
+the model. Pair it with `require_scope=True` on the transport so a lost context
+fails closed. Details:
+<https://seekrit.dev/docs/guides/agent-proxy/in-process>.
+
+Because it runs in your process, this is a weaker boundary than the
+[egress proxy](https://seekrit.dev/docs/guides/agent-proxy). What it does buy:
+the value exists only inside one HTTP call, so it never reaches model context, a
+tool result, or a trace exporter — nor an environment-scraping bug in a
+dependency.
+
 ## Secret references
 
 A secret's value may reference another with `${OTHER_SECRET}`. References are
