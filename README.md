@@ -63,6 +63,44 @@ seekrit.Client(overrides={"shared": "dev"}).resolve()
 The client is **fail-closed**: any resolve or decrypt failure raises rather than
 returning partial results.
 
+## Notebooks
+
+`seekrit.load()` is the one-call form: resolve, load `os.environ`, done. Put it
+at the top of a notebook or script.
+
+```python
+import seekrit
+
+seekrit.load()
+```
+
+It's built around the two ways a notebook leaks a credential:
+
+- **No token in a cell.** `load()` takes the token from `$SEEKRIT_TOKEN`, and
+  when there isn't one it asks through a password prompt (ipykernel routes
+  `getpass` to the notebook frontend) — so the token stays in kernel memory
+  instead of being saved into the `.ipynb`. Pass `prompt=False` to never ask, or
+  set `SEEKRIT_TOKEN` for headless runs like `papermill`.
+- **No values in cell outputs.** `load()` returns the names it loaded and the
+  scope they came from — never the values — so displaying it in a cell writes a
+  summary into the notebook file and nothing more.
+
+```python
+loaded = seekrit.load()
+loaded                       # <seekrit: 7 secrets loaded from acme/analytics/staging: API_KEY, …>
+len(loaded)                  # 7
+"DATABASE_URL" in loaded     # True
+os.environ["DATABASE_URL"]   # the value lives here, not on the result
+```
+
+Re-running the cell refreshes: `load()` defaults to `override=True`, unlike
+`into_env()`, so a rotated secret takes effect on a re-run rather than being
+skipped as already-set. Pass `override=False` to keep what the environment
+already has (those names are then listed in `loaded.skipped`).
+
+This guards the summary, not your own cells — `print(os.environ["API_KEY"])`
+still writes a secret into the notebook. Strip outputs before committing.
+
 ## Secret references
 
 A secret's value may reference another with `${OTHER_SECRET}`. References are

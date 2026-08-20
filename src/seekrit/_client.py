@@ -6,7 +6,7 @@ import json
 import os
 import urllib.error
 import urllib.request
-from typing import Dict, Mapping, MutableMapping, Optional
+from typing import Dict, Mapping, MutableMapping, Optional, Tuple
 
 from ._crypto import TokenKey, materialize
 from .errors import SeekritApiError, SeekritCryptoError, SeekritError
@@ -67,7 +67,8 @@ class Client:
         """Load resolved secrets into ``env`` (default ``os.environ``).
 
         By default an existing variable is left untouched (process env wins);
-        pass ``override=True`` to let resolved secrets take precedence.
+        pass ``override=True`` to let resolved secrets take precedence. Note that
+        :func:`seekrit.load` — the one-call front door — defaults the other way.
         Returns the merged secrets that were resolved.
         """
         target = os.environ if env is None else env
@@ -76,6 +77,16 @@ class Client:
             if override or name not in target:
                 target[name] = value
         return merged
+
+    def _resolve_detailed(self) -> Tuple[Dict[str, str], Dict[str, str]]:
+        """:meth:`resolve` plus the response's ``scope`` slugs, in one request.
+
+        The scope names the org/app/environment the token is bound to — labels,
+        not secrets. Used by :func:`seekrit.load` to say what it loaded.
+        """
+        response = self._fetch()
+        secrets = materialize(response, self._key, interpolate=self._interpolate)
+        return secrets, dict(response.get("scope") or {})
 
     # -- internal ---------------------------------------------------------
 
