@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.5.0...sdk-python-v0.6.0) (2026-08-20)
+
+
+### Features
+
+* **sdk-python:** Pydantic AI toolset — scope a credential to one tool call ([#256](https://github.com/mileszim/seekrit/issues/256)) ([d0c6ee8](https://github.com/mileszim/seekrit/commit/d0c6ee825c22a35db93069a9cb08bfb9e48a9368))
+
 ## [0.5.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.4.0...sdk-python-v0.5.0) (2026-08-20)
 
 
