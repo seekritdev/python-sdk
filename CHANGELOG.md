@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.4.0...sdk-python-v0.5.0) (2026-08-20)
+
+
+### Features
+
+* **sdks:** in-process placeholder injection, and LangChain middleware ([#253](https://github.com/mileszim/seekrit/issues/253)) ([c56f13f](https://github.com/mileszim/seekrit/commit/c56f13f4e786491bff80f2bd25cfe3a5ba70d49f))
+
 ## [0.4.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.3.0...sdk-python-v0.4.0) (2026-08-20)
 
 
