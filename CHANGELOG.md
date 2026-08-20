@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.3.0...sdk-python-v0.4.0) (2026-08-20)
+
+
+### Features
+
+* **sdks/python:** load an environment into a notebook in one call ([#246](https://github.com/mileszim/seekrit/issues/246)) ([6f0c5ce](https://github.com/mileszim/seekrit/commit/6f0c5ce0a79dfb3e9a856c1ae564132967c62d0b))
+
 ## [0.3.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.2.0...sdk-python-v0.3.0) (2026-07-25)
 
 
