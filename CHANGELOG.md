@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.6.0...sdk-python-v0.7.0) (2026-08-23)
+
+
+### Features
+
+* OpenClaw and Hermes Agent integrations ([#279](https://github.com/mileszim/seekrit/issues/279)) ([5b32323](https://github.com/mileszim/seekrit/commit/5b3232332ca3a3ba78cdb9ec15b83868dbfabab8))
+
 ## [0.6.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.5.0...sdk-python-v0.6.0) (2026-08-20)
 
 
