@@ -201,6 +201,25 @@ the value exists only inside one HTTP call, so it never reaches model context, a
 tool result, or a trace exporter — nor an environment-scraping bug in a
 dependency.
 
+## Hermes Agent
+
+Installing this package registers two secret sources for
+[Hermes Agent](https://hermes-agent.nousresearch.com), so the agent's provider
+credentials arrive from seekrit at startup instead of sitting in
+`~/.hermes/.env`. Both are inert until a `secrets:` section enables one.
+
+```yaml
+secrets:
+  sources: [seekrit]
+  seekrit:
+    enabled: true
+```
+
+`seekrit` is the **bulk** source — one environment, whole. `seekrit_refs` is the
+**mapped** one, for explicit `VAR: skt://NAME` bindings, renames, and reading
+more than one environment. Full guide:
+[seekrit.dev/docs/guides/ai-agents/hermes](https://seekrit.dev/docs/guides/ai-agents/hermes).
+
 ## Secret references
 
 A secret's value may reference another with `${OTHER_SECRET}`. References are

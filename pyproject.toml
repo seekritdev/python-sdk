@@ -31,6 +31,12 @@ langchain = ["httpx>=0.24", "langchain>=1.0"]
 # httpx along for the same reason.
 pydantic-ai = ["httpx>=0.24", "pydantic-ai>=1.0"]
 
+# `seekrit.hermes` — Hermes Agent secret sources. No extra: the module imports
+# Hermes lazily (only inside `register()`), so there is no third-party dependency
+# to install — it is importable wherever Hermes itself is.
+[project.entry-points."hermes_agent.plugins"]
+seekrit = "seekrit.hermes:register"
+
 [project.urls]
 Homepage = "https://seekrit.dev"
 Documentation = "https://seekrit.dev/docs"
