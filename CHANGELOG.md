@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.7.0...sdk-python-v0.8.0) (2026-09-13)
+
+
+### Features
+
+* **sdk-python:** native CrewAI integration ([#389](https://github.com/mileszim/seekrit/issues/389)) ([b2ab672](https://github.com/mileszim/seekrit/commit/b2ab672910dd22924cbb3b5133ff62d05ac841f1))
+
 ## [0.7.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.6.0...sdk-python-v0.7.0) (2026-08-23)
 
 
