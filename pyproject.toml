@@ -30,6 +30,10 @@ langchain = ["httpx>=0.24", "langchain>=1.0"]
 # `seekrit.pydantic_ai` — a WrapperToolset that scopes each tool call. Brings
 # httpx along for the same reason.
 pydantic-ai = ["httpx>=0.24", "pydantic-ai>=1.0"]
+# `seekrit.crewai` — a BaseInterceptor that substitutes into a CrewAI
+# provider's outbound request, plus hooks that scope credentials per agent and
+# per tool. httpx again: the interceptor rewrites an httpx.Request.
+crewai = ["httpx>=0.24", "crewai>=1.15"]
 
 # `seekrit.hermes` — Hermes Agent secret sources. No extra: the module imports
 # Hermes lazily (only inside `register()`), so there is no third-party dependency

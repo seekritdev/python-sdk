@@ -271,7 +271,11 @@ class _Rewriter:
         scope: Optional[Scope],
         values: Mapping[str, str],
     ) -> "httpx.Request":
-        rules = narrow(self._rules, scope.allow) if scope and scope.allow else self._rules
+        # `is not None`, not truthiness: an *empty* allow list is the whole point
+        # of an exhaustive `tools={...}` — a tool nobody named may inject nothing.
+        # Reading `()` as "no opinion" would hand it the unnarrowed rules instead.
+        narrowed = scope is not None and scope.allow is not None
+        rules = narrow(self._rules, scope.allow) if narrowed else self._rules
         host = request.url.host
         path = request.url.path
         method = request.method.upper()

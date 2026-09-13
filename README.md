@@ -195,6 +195,42 @@ with use_scope(Scope(overrides={"tenants": tenant})):
     result = await agent.run(prompt, deps=Deps(tenant=tenant))
 ```
 
+### CrewAI
+
+`pip install 'seekrit[crewai]'` adds CrewAI's own interception contract, plus
+hooks that scope credentials per **agent** as well as per tool — the bound that
+matters when several agents share one process:
+
+```python
+from crewai import LLM
+from seekrit.crewai import SeekritCredentials, SeekritInterceptor, ensure_intercepted
+
+llm = ensure_intercepted(
+    LLM(
+        model="openai/gpt-5.6-terra",
+        api_key="{{seekrit:OPENAI_API_KEY}}",
+        interceptor=SeekritInterceptor(
+            allow={
+                "api.openai.com": ["OPENAI_API_KEY"],
+                "api.stripe.com": ["STRIPE_SECRET_KEY"],
+            },
+            require_scope=True,
+        ),
+    )
+)
+
+with SeekritCredentials(
+    agents={"Researcher": ["OPENAI_API_KEY"]},
+    tools={"refund": ["OPENAI_API_KEY", "STRIPE_SECRET_KEY"]},
+):
+    crew.kickoff()
+```
+
+Both lists are exhaustive and are intersected, so the `Researcher` cannot reach
+Stripe even by calling `refund`, and an agent added later starts with nothing.
+`ensure_intercepted` is worth the line: a model string that routes to CrewAI's
+LiteLLM fallback accepts an interceptor and never calls it.
+
 Because it runs in your process, this is a weaker boundary than the
 [egress proxy](https://seekrit.dev/docs/guides/agent-proxy). What it does buy:
 the value exists only inside one HTTP call, so it never reaches model context, a

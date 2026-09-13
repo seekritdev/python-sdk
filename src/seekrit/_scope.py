@@ -55,3 +55,19 @@ def use_scope(scope: Optional[Scope]) -> Iterator[None]:
         yield
     finally:
         _current.reset(token)
+
+
+def set_scope(scope: Optional[Scope]) -> None:
+    """Install ``scope`` with no matching reset, replacing whatever was there.
+
+    :func:`use_scope` is the right tool wherever the framework hands you the
+    call to wrap. Some do not: CrewAI dispatches ``before_llm_call`` and
+    ``after_llm_call`` as two independent hooks with no ``finally`` between
+    them, so there is nowhere to hold a ``contextvars.Token`` and nothing
+    guarantees the closing hook runs at all. Setting unconditionally is what
+    makes that safe — every ``before`` hook overwrites the previous value, so a
+    scope stranded by a raising call narrows nothing it should not; the next
+    call installs its own, and :mod:`seekrit.crewai` also clears at the end of a
+    run. See that module for the whole argument.
+    """
+    _current.set(scope)

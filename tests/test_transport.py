@@ -272,6 +272,41 @@ class ScopeTests(unittest.TestCase):
                 403,
             )
 
+    def test_an_empty_scope_allowlist_permits_nothing(self):
+        """``allow=()`` means *nothing*, not "no opinion".
+
+        This is what every adapter's exhaustive ``tools={...}`` compiles down to:
+        a tool nobody named gets an empty list, and the promise is that it may
+        inject nothing at all. Read as falsy rather than as ``is not None``, an
+        empty list would hand that tool the full static allowlist instead —
+        exactly backwards, and silently.
+        """
+        _, mock = recorder()
+        client = httpx.Client(
+            transport=SeekritTransport(
+                allow={"api.openai.com": ["OPENAI_API_KEY"]},
+                client=FakeClient(),
+                transport=mock,
+            )
+        )
+        with use_scope(Scope(allow=(), label="tool:search")):
+            refused = client.get(
+                "https://api.openai.com/v1/x",
+                headers={"authorization": "Bearer {{seekrit:OPENAI_API_KEY}}"},
+            )
+        self.assertEqual(refused.status_code, 403)
+        self.assertEqual(refused.headers["x-seekrit-refusal"], "denied")
+        # A scope with no allowlist at all is the "no opinion" case, and still
+        # gets the static rules.
+        with use_scope(Scope(label="tool:chat")):
+            self.assertEqual(
+                client.get(
+                    "https://api.openai.com/v1/x",
+                    headers={"authorization": "Bearer {{seekrit:OPENAI_API_KEY}}"},
+                ).status_code,
+                200,
+            )
+
     def test_require_scope_fails_closed_when_the_context_is_lost(self):
         _, mock = recorder()
         client = httpx.Client(
