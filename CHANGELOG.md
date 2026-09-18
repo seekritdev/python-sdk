@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.8.0...sdk-python-v0.9.0) (2026-09-18)
+
+
+### Features
+
+* **sdk-python:** TypeSafe integration, via an httpx2 transport binding ([#432](https://github.com/mileszim/seekrit/issues/432)) ([e39c092](https://github.com/mileszim/seekrit/commit/e39c0929284cc9c19ce404fb0476536b362f4d03))
+
 ## [0.8.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.7.0...sdk-python-v0.8.0) (2026-09-13)
 
 
