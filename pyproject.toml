@@ -23,6 +23,10 @@ dependencies = ["cryptography>=41"]
 # `seekrit.transport` — the httpx transports that substitute
 # {{seekrit:NAME}} placeholders into outbound requests.
 httpx = ["httpx>=0.24"]
+# `seekrit.transport_httpx2` — the same transports against httpx2, which is a
+# separate distribution rather than a newer httpx. A client that takes an
+# `httpx2.BaseTransport` cannot accept the httpx 0.x one.
+httpx2 = ["httpx2>=2.0"]
 # `seekrit.langchain` — agent middleware for per-request and per-tool
 # credential scoping. Brings httpx along, since the middleware is only
 # useful paired with the transport.

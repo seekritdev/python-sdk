@@ -129,6 +129,12 @@ network through the same `http_client=`: LangChain's `ChatOpenAI`, Pydantic AI's
 `OpenAIProvider`, the OpenAI Agents SDK's `set_default_openai_client`,
 LlamaIndex's `OpenAI`. Use `AsyncSeekritTransport` for the async client.
 
+For a client built on [httpx2](https://github.com/pydantic/httpx2) — a separate
+distribution, whose `BaseTransport` is unrelated to httpx's — import the same
+classes from `seekrit.transport_httpx2` instead, after
+`pip install 'seekrit[httpx2]'`. Same arguments, same behaviour; the TypeSafe SDK
+is one such client.
+
 The allowlist is the boundary, and it is default-deny: a name that is not
 permitted toward that host, method, and path is refused, and so is a name that
 did not resolve. Neither sends the request.
