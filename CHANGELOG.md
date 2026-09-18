@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.9.0...sdk-python-v0.10.0) (2026-09-18)
+
+
+### Features
+
+* **litellm:** a custom secret manager, and a proxy bundle for the gateway's egress ([#418](https://github.com/mileszim/seekrit/issues/418)) ([b6c0f9e](https://github.com/mileszim/seekrit/commit/b6c0f9ecced8a4bac8024efa8e62f0f4a27818f9))
+
 ## [0.9.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.8.0...sdk-python-v0.9.0) (2026-09-18)
 
 
