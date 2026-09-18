@@ -42,6 +42,11 @@ crewai = ["httpx>=0.24", "crewai>=1.15"]
 # `seekrit.hermes` — Hermes Agent secret sources. No extra: the module imports
 # Hermes lazily (only inside `register()`), so there is no third-party dependency
 # to install — it is importable wherever Hermes itself is.
+#
+# `seekrit.litellm` — a LiteLLM custom secret manager. No extra either, and for
+# the same reason: it imports LiteLLM only inside `secret_manager_class()`, and
+# it only ever runs inside a process that already is LiteLLM. An extra would
+# pull one of the heaviest trees in this ecosystem into a zero-dependency SDK.
 [project.entry-points."hermes_agent.plugins"]
 seekrit = "seekrit.hermes:register"
 

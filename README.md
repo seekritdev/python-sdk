@@ -262,6 +262,41 @@ secrets:
 more than one environment. Full guide:
 [seekrit.dev/docs/guides/ai-agents/hermes](https://seekrit.dev/docs/guides/ai-agents/hermes).
 
+## LiteLLM
+
+A [LiteLLM](https://docs.litellm.ai) gateway can read its provider keys through
+seekrit, so `config.yaml` names credentials it does not contain and the
+deployment's environment holds none of them.
+
+LiteLLM loads a custom secret manager from a **file beside `config.yaml`**, not
+from an installed package — it splits the configured path on `.` into exactly
+two parts — so a two-line shim is required:
+
+```python
+# seekrit_secret_manager.py
+from seekrit.litellm import SeekritSecretManager  # noqa: F401
+```
+
+```yaml
+general_settings:
+  key_management_system: custom
+  key_management_settings:
+    custom_secret_manager: seekrit_secret_manager.SeekritSecretManager
+    access_mode: read_only
+
+model_list:
+  - model_name: gpt-5.6-terra
+    litellm_params:
+      model: openai/gpt-5.6-terra
+      api_key: os.environ/OPENAI_API_KEY
+```
+
+A name seekrit does not hold falls back to the process environment, so adoption
+can be partial. The gateway still holds the plaintext while it runs; to keep
+provider keys out of it entirely, put `{{seekrit:OPENAI_API_KEY}}` in the
+environment and run LiteLLM behind the egress proxy in forward mode. Full guide:
+[seekrit.dev/docs/guides/frameworks/litellm](https://seekrit.dev/docs/guides/frameworks/litellm).
+
 ## Secret references
 
 A secret's value may reference another with `${OTHER_SECRET}`. References are
