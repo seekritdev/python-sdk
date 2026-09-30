@@ -1,0 +1,8 @@
+{
+  "name": "seekrit-python-worker",
+  "main": "src/entry.py",
+  "compatibility_date": "2026-09-30",
+  "compatibility_flags": ["python_workers"],
+  "secrets": { "required": ["SEEKRIT_TOKEN"] },
+  "observability": { "enabled": true }
+}

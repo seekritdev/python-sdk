@@ -59,4 +59,4 @@ Source = "https://github.com/seekritdev/python-sdk"
 packages = ["src/seekrit"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/seekrit", "tests", "testdata", "README.md"]
+include = ["src/seekrit", "tests", "testdata", "examples", "e2e", "README.md"]

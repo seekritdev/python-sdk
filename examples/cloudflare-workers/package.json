@@ -1,0 +1,7 @@
+{
+  "name": "seekrit-python-worker",
+  "private": true,
+  "devDependencies": {
+    "wrangler": "^4.139.0"
+  }
+}

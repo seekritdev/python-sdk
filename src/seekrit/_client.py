@@ -6,15 +6,14 @@ import json
 import os
 import urllib.error
 import urllib.request
-from typing import Dict, Mapping, MutableMapping, Optional, Tuple
+from typing import Dict, MutableMapping, Optional, Tuple
 
-from ._crypto import TokenKey, materialize
+from ._client_config import DEFAULT_API_URL, _ClientConfig
+from ._crypto import materialize
 from .errors import SeekritApiError, SeekritCryptoError, SeekritError
 
-DEFAULT_API_URL = "https://api.seekrit.dev"
 
-
-class Client:
+class Client(_ClientConfig):
     """A read-only seekrit client bound to one service token.
 
     A service token selects exactly one app environment (plus its composed
@@ -30,25 +29,6 @@ class Client:
         interpolate: expand ``${OTHER_SECRET}`` references in resolved values
             (default ``True``); ``False`` returns the stored text verbatim.
     """
-
-    def __init__(
-        self,
-        token: Optional[str] = None,
-        *,
-        api_url: Optional[str] = None,
-        overrides: Optional[Mapping[str, str]] = None,
-        timeout: float = 30.0,
-        interpolate: bool = True,
-    ) -> None:
-        token = token or os.environ.get("SEEKRIT_TOKEN")
-        if not token:
-            raise SeekritError("no service token: pass token= or set SEEKRIT_TOKEN")
-        self._token = token
-        self._key = TokenKey.parse(token)  # fail fast on a bad token
-        self._api_url = (api_url or os.environ.get("SEEKRIT_API_URL") or DEFAULT_API_URL).rstrip("/")
-        self._overrides = dict(overrides or {})
-        self._timeout = timeout
-        self._interpolate = interpolate
 
     def resolve(self) -> Dict[str, str]:
         """Fetch, decrypt, and merge; return ``{NAME: value}``."""
@@ -91,12 +71,8 @@ class Client:
     # -- internal ---------------------------------------------------------
 
     def _fetch(self) -> dict:
-        url = self._api_url + "/v1/resolve"
-        query = "&".join(f"with={g}:{e}" for g, e in sorted(self._overrides.items()))
-        if query:
-            url += "?" + query
         request = urllib.request.Request(
-            url,
+            self._resolve_url(),
             method="GET",
             headers={"authorization": f"Bearer {self._token}", "accept": "application/json"},
         )
@@ -107,17 +83,6 @@ class Client:
             raise self._api_error(exc.code, exc.read()) from exc
         except urllib.error.URLError as exc:
             raise SeekritError(f"resolve request failed: {exc.reason}") from exc
-
-    @staticmethod
-    def _api_error(status: int, body: bytes) -> SeekritApiError:
-        code, message = "internal", f"HTTP {status}"
-        try:
-            error = json.loads(body).get("error", {})
-            code = error.get("code", code)
-            message = error.get("message", message)
-        except (ValueError, AttributeError):
-            pass
-        return SeekritApiError(status, code, message)
 
 
 __all__ = ["Client", "DEFAULT_API_URL", "SeekritError", "SeekritApiError", "SeekritCryptoError"]

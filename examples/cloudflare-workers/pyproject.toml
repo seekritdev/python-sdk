@@ -1,0 +1,13 @@
+[project]
+name = "seekrit-python-worker"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = ["seekrit"]
+
+[dependency-groups]
+dev = ["workers-py>=1.17.5", "workers-runtime-sdk>=1.9.2"]
+
+# Run against this checkout. Remove this table to use a published SDK release
+# that includes seekrit.cloudflare.
+[tool.uv.sources]
+seekrit = { path = "../.." }

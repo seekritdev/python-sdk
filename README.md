@@ -63,6 +63,35 @@ seekrit.Client(overrides={"shared": "dev"}).resolve()
 The client is **fail-closed**: any resolve or decrypt failure raises rather than
 returning partial results.
 
+## Cloudflare Python Workers
+
+Use the native asynchronous client inside a Worker handler, passing the token
+from the Worker's secret binding:
+
+```python
+from seekrit.cloudflare import AsyncClient
+
+secrets = await AsyncClient(token=self.env.SEEKRIT_TOKEN).resolve()
+api_key = await AsyncClient(token=self.env.SEEKRIT_TOKEN).get("API_KEY")
+```
+
+`AsyncClient` accepts the same configuration arguments as `Client`, uses
+`workers.fetch` without a thread pool, and decrypts locally with the same
+`cryptography` code. Pywrangler installs the Pyodide-compatible dependencies.
+Its timeout covers fetching and reading the response; redirects are refused.
+Each `resolve()` or `get()` fetches again, with no plaintext cache. Resolve once
+and reuse the mapping within a handler when you need several keys.
+
+Keep values in the handler, rather than loading `os.environ` or persistent
+Cloudflare storage. The existing `AsyncSeekritTransport` adapters still resolve
+through a thread executor and are not this Workers integration.
+
+The adapter is new in this source change; the previous 0.10.0 release does not
+include it. The [runnable example](examples/cloudflare-workers) uses the local
+SDK checkout until a release containing `seekrit.cloudflare` is published.
+See the [integration guide](https://seekrit.dev/docs/guides/cloudflare-python-workers)
+for Pywrangler setup, FastAPI, and deployment.
+
 ## Notebooks
 
 `seekrit.load()` is the one-call form: resolve, load `os.environ`, done. Put it

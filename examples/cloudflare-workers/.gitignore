@@ -1,0 +1,8 @@
+.venv/
+.venv-workers/
+python_modules/
+pylock.toml
+uv.lock
+__pycache__/
+node_modules/
+package-lock.json
