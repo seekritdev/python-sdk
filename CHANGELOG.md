@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.10.0...sdk-python-v0.11.0) (2026-09-30)
+
+
+### Features
+
+* **sdk-python:** Add Cloudflare Python Workers support ([#492](https://github.com/mileszim/seekrit/issues/492)) ([e003873](https://github.com/mileszim/seekrit/commit/e00387325ddc6d17af7d882477bff8cde9b9c16a))
+
 ## [0.10.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.9.0...sdk-python-v0.10.0) (2026-09-18)
 
 
