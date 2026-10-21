@@ -52,8 +52,13 @@ seekrit = "seekrit.hermes:register"
 
 [project.urls]
 Homepage = "https://seekrit.dev"
-Documentation = "https://seekrit.dev/docs"
+Documentation = "https://seekrit.dev/docs/guides/sdks"
+"AI agents" = "https://seekrit.dev/docs/guides/ai-agents"
+"Agent frameworks" = "https://seekrit.dev/docs/guides/frameworks"
+"Credential broker" = "https://seekrit.dev/docs/guides/agent-proxy"
+"Security model" = "https://seekrit.dev/docs/concepts/security"
 Source = "https://github.com/seekritdev/python-sdk"
+Issues = "https://github.com/seekritdev/python-sdk/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/seekrit"]
