@@ -58,7 +58,7 @@ class CloudflareTest(unittest.IsolatedAsyncioTestCase):
             "https://api.seekrit.dev/v1/resolve",
             method="GET",
             headers={
-                "authorization": "Bearer " + VECTORS["token"],
+                "authorization": "Bearer " + VECTORS["authToken"],
                 "accept": "application/json",
             },
             redirect="manual",

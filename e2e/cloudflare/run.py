@@ -40,7 +40,7 @@ class Fixture(BaseHTTPRequestHandler):
         url = urlsplit(self.path)
         if url.path == "/must-not-follow/v1/resolve":
             type(self).redirected += 1
-        if self.headers.get("authorization") != "Bearer " + VECTORS["token"]:
+        if self.headers.get("authorization") != "Bearer " + VECTORS["authToken"]:
             self.send_error(401)
             return
         if parse_qs(url.query).get("with") == ["shared:dev&with=other:prod"]:

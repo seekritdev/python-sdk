@@ -8,7 +8,7 @@ Three steps, matching ``crates/seekrit-core`` and ``packages/crypto``:
 
 Blob formats (all segments base64url, no padding):
 
-* token       ``skt_<id>_<pkcs8 private key>``
+* token       ``skt_<id>_v2.<auth secret>.<pkcs8 private key>``
 * wrapped DEK ``wd1.<ephemeral pub (raw SEC1)>.<hkdf salt>.<iv>.<ciphertext||tag>``
 * secret      ``sc1.<iv>.<ciphertext||tag>``
 """
@@ -31,7 +31,15 @@ from .errors import SeekritCryptoError
 
 _HKDF_INFO = b"seekrit/wrap-dek/v1"
 # Only the first two underscores are separators; the key segment may contain "_".
-_TOKEN_RE = re.compile(r"^(skt_[0-9A-Za-z]+)_([A-Za-z0-9_-]+)$")
+_TOKEN_RE = re.compile(r"^(skt_[0-9A-Za-z]+)_(?:v2\.[A-Za-z0-9_-]{43}\.)?([A-Za-z0-9_-]+)$")
+
+
+def service_token_auth(token: str) -> str:
+    """Extract the wire credential; never send a legacy private-key token."""
+    match = re.fullmatch(r"(skt_[0-9A-Za-z]+_v2\.[A-Za-z0-9_-]{43})(?:\.[A-Za-z0-9_-]+)?", token)
+    if not match:
+        raise SeekritCryptoError("a v2 service token is required for API access; replace legacy tokens in the dashboard")
+    return match.group(1)
 
 
 def _b64url_decode(text: str) -> bytes:
@@ -63,7 +71,7 @@ class TokenKey:
 
     @classmethod
     def parse(cls, token: str) -> "TokenKey":
-        match = _TOKEN_RE.match(token)
+        match = _TOKEN_RE.fullmatch(token)
         if not match:
             raise SeekritCryptoError("not a valid seekrit service token")
         token_id, key_b64 = match.group(1), match.group(2)

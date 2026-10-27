@@ -7,7 +7,7 @@ import os
 from typing import Mapping, Optional
 from urllib.parse import urlencode
 
-from ._crypto import TokenKey
+from ._crypto import TokenKey, service_token_auth
 from .errors import SeekritApiError, SeekritError
 
 DEFAULT_API_URL = "https://api.seekrit.dev"
@@ -26,7 +26,7 @@ class _ClientConfig:
         token = token or os.environ.get("SEEKRIT_TOKEN")
         if not token:
             raise SeekritError("no service token: pass token= or set SEEKRIT_TOKEN")
-        self._token = token
+        self._token = service_token_auth(token)
         self._key = TokenKey.parse(token)
         self._api_url = (
             api_url or os.environ.get("SEEKRIT_API_URL") or DEFAULT_API_URL
