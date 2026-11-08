@@ -30,6 +30,7 @@ try:
         run_before_tool_call_hooks,
     )
 
+    from seekrit._policy import AllowRule
     from seekrit._scope import current_scope, set_scope
     from seekrit.crewai import (
         SeekritCredentials,
@@ -117,6 +118,10 @@ class StubUpstream:
     def url(self):
         host, port = self.server.server_address[:2]
         return "http://{}:{}/v1".format(host, port)
+
+    @property
+    def port(self):
+        return self.server.server_address[1]
 
     @property
     def authorizations(self):
@@ -245,8 +250,16 @@ class LiveLLMTest(unittest.TestCase):
         set_scope(None)
 
     def build(self, upstream, **kwargs):
+        # The stub speaks plain HTTP on an ephemeral port, and a rule covers
+        # HTTPS on 443 unless it names others, so this one names the stub's.
         interceptor = SeekritInterceptor(
-            allow={"127.0.0.1": ["OPENAI_API_KEY"]},
+            rules=[
+                AllowRule(
+                    host="127.0.0.1",
+                    allow=("OPENAI_API_KEY",),
+                    http_ports=(upstream.port,),
+                )
+            ],
             client=FakeClient(),
             **kwargs,
         )

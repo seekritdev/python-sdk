@@ -218,6 +218,47 @@ class RefusalTests(unittest.TestCase):
             "OPENAI_API_KEY",
         )
 
+    def test_a_rule_naming_no_ports_covers_https_on_443_only(self):
+        # The proxy's finding, in-process: another port on the same name is
+        # another service, and cleartext puts the substituted value on the wire.
+        seen, mock = recorder()
+        client = httpx.Client(
+            transport=SeekritTransport(
+                allow={"api.openai.com": ["OPENAI_API_KEY"]},
+                client=FakeClient(),
+                transport=mock,
+            )
+        )
+        headers = {"authorization": "Bearer {{seekrit:OPENAI_API_KEY}}"}
+        for url in (
+            "https://api.openai.com:8443/v1/models",
+            "http://api.openai.com/v1/models",
+            "http://api.openai.com:443/v1/models",
+        ):
+            with self.subTest(url):
+                self._assert_refused(client.get(url, headers=headers), "denied", "OPENAI_API_KEY")
+        self.assertEqual(seen, {}, "nothing was sent")
+        ok = client.get("https://api.openai.com:443/v1/models", headers=headers)
+        self.assertEqual(ok.status_code, 200)
+        self.assertEqual(seen["headers"]["authorization"], "Bearer sk-live-abc")
+
+    def test_listed_ports_are_exactly_the_ports_a_rule_covers(self):
+        rules = [AllowRule(host="localhost", allow=("STRIPE_SECRET_KEY",), http_ports=(3000,))]
+        seen, mock = recorder()
+        client = httpx.Client(
+            transport=SeekritTransport(rules=rules, client=FakeClient(), transport=mock)
+        )
+        headers = {"authorization": "Bearer {{seekrit:STRIPE_SECRET_KEY}}"}
+        ok = client.post("http://localhost:3000/charge", headers=headers)
+        self.assertEqual(ok.status_code, 200)
+        self.assertEqual(seen["headers"]["authorization"], "Bearer sk_test_stripe")
+        # `http_ports` alone replaces the default rather than adding to it.
+        for url in ("https://localhost/charge", "http://localhost:3001/charge"):
+            with self.subTest(url):
+                self._assert_refused(
+                    client.post(url, headers=headers), "denied", "STRIPE_SECRET_KEY"
+                )
+
     def test_an_empty_allowlist_is_a_configuration_error(self):
         with self.assertRaises(SeekritError):
             SeekritTransport(client=FakeClient())

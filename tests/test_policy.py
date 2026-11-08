@@ -11,7 +11,16 @@ Runnable with either ``pytest`` or ``python -m unittest``.
 
 import unittest
 
-from seekrit._policy import AllowRule, evaluate, match_path, narrow, rules_from_allow
+from seekrit._policy import (
+    AllowRule,
+    Transport,
+    evaluate,
+    match_path,
+    narrow,
+    rule_ports,
+    rules_from_allow,
+    transport_of,
+)
 
 RULES = [
     AllowRule(
@@ -54,6 +63,72 @@ DECISIONS = [
 ]
 
 
+TRANSPORT_RULES = [
+    AllowRule(
+        host="api.example.com",
+        allow=("API_KEY",),
+        label="public API, default transport",
+        https_ports=(443,),
+        http_ports=(),
+    ),
+    AllowRule(
+        host="api.example.com",
+        methods=("GET",),
+        label="admin, reads",
+        https_ports=(8443,),
+        http_ports=(),
+    ),
+    AllowRule(
+        host="registry.internal",
+        allow=("REGISTRY_TOKEN",),
+        https_ports=(),
+        http_ports=(5000,),
+    ),
+    AllowRule(
+        host="mixed.internal",
+        https_ports=(443, 8443),
+        http_ports=(8080,),
+    ),
+]
+
+# (rules, host, transport, method, path, secret, decision, rule_index), copied
+# from the vectors' `transport` section. A transport of None is a destination the
+# operator fixed, which no port rule narrows; RULES above are a v1 bundle's, and
+# narrow to HTTPS on 443 like any rule naming no ports.
+TRANSPORT_DECISIONS = [
+    (TRANSPORT_RULES, "api.example.com", Transport("https", 443),
+     "POST", "/v1/x", "API_KEY", "allow", 0),
+    (TRANSPORT_RULES, "api.example.com", Transport("https", 8443),
+     "GET", "/admin", "API_KEY", "secret_not_allowed", 1),
+    (TRANSPORT_RULES, "api.example.com", Transport("https", 8443),
+     "POST", "/admin", None, "method_not_allowed", 1),
+    (TRANSPORT_RULES, "api.example.com", Transport("https", 9000),
+     "GET", "/", None, "port_not_allowed", None),
+    (TRANSPORT_RULES, "api.example.com", Transport("http", 80),
+     "GET", "/", "API_KEY", "port_not_allowed", None),
+    (TRANSPORT_RULES, "registry.internal", Transport("http", 5000),
+     "PUT", "/v2/x", "REGISTRY_TOKEN", "allow", 2),
+    (TRANSPORT_RULES, "registry.internal", Transport("https", 443),
+     "GET", "/", None, "port_not_allowed", None),
+    (TRANSPORT_RULES, "mixed.internal", Transport("https", 8443),
+     "GET", "/", None, "allow", 3),
+    (TRANSPORT_RULES, "mixed.internal", Transport("http", 8443),
+     "GET", "/", None, "port_not_allowed", None),
+    (TRANSPORT_RULES, "mixed.internal", Transport("http", 8080),
+     "GET", "/", None, "allow", 3),
+    (TRANSPORT_RULES, "api.example.com", None,
+     "DELETE", "/", None, "allow", 0),
+    (TRANSPORT_RULES, "evil.example.com", Transport("https", 443),
+     "GET", "/", None, "no_rule", None),
+    (RULES, "api.openai.com", Transport("https", 443),
+     "POST", "/v1/chat/completions", "OPENAI_API_KEY", "allow", 0),
+    (RULES, "api.openai.com", Transport("https", 8443),
+     "POST", "/v1/chat/completions", "OPENAI_API_KEY", "port_not_allowed", None),
+    (RULES, "hooks.slack.com", Transport("http", 80),
+     "POST", "/services/T0/B0/xyz", "SLACK_WEBHOOK_URL", "port_not_allowed", None),
+]
+
+
 class PolicyDecisionTests(unittest.TestCase):
     def test_matches_the_proxy_decision_vectors(self):
         for host, method, path, secret, decision, rule_index in DECISIONS:
@@ -80,6 +155,34 @@ class PolicyDecisionTests(unittest.TestCase):
         self.assertTrue(match_path("/repos/*/issues", "/repos/one/issues"))
         self.assertFalse(match_path("/repos/*/issues", "/repos/one/two/issues"))
 
+
+class TransportTests(unittest.TestCase):
+    def test_matches_the_proxy_transport_vectors(self):
+        for rules, host, transport, method, path, secret, decision, rule_index in (
+            TRANSPORT_DECISIONS
+        ):
+            with self.subTest(f"{method} {host} over {transport}{path} {secret or '-'}"):
+                verdict = evaluate(
+                    rules, host=host, method=method, path=path, secret=secret,
+                    transport=transport,
+                )
+                self.assertEqual(verdict.decision, decision)
+                self.assertEqual(verdict.rule_index, rule_index)
+
+    def test_a_rule_naming_no_ports_covers_https_on_443_only(self):
+        self.assertEqual(rule_ports(AllowRule(host="a.test")), ((443,), ()))
+        self.assertEqual(rule_ports(AllowRule(host="a.test", http_ports=(80, 80))), ((), (80,)))
+
+    def test_transport_of_fills_in_the_schemes_own_port(self):
+        self.assertEqual(transport_of("https", None), Transport("https", 443))
+        self.assertEqual(transport_of("HTTP", None), Transport("http", 80))
+        self.assertEqual(transport_of("https", 8443), Transport("https", 8443))
+        # A scheme no rule can cover is refused, not waved through.
+        verdict = evaluate(
+            [AllowRule(host="a.test", allow=("K",))], host="a.test", method="GET", path="/",
+            secret="K", transport=transport_of("ftp", None),
+        )
+        self.assertEqual(verdict.decision, "port_not_allowed")
 
 class ShorthandTests(unittest.TestCase):
     def test_shorthand_permits_any_operation_toward_that_host(self):
@@ -111,6 +214,12 @@ class NarrowingTests(unittest.TestCase):
         self.assertEqual(narrowed[0].methods, ("POST",))
         self.assertEqual(narrowed[0].paths, ("/v1/chat/completions", "/v1/embeddings"))
 
+    def test_narrowing_preserves_the_ports(self):
+        # Dropping them would quietly move a rule back to HTTPS on 443.
+        narrowed = narrow(TRANSPORT_RULES, ["REGISTRY_TOKEN"])
+        self.assertEqual(narrowed[2].http_ports, (5000,))
+        self.assertEqual(narrowed[3].https_ports, (443, 8443))
+
 
 class FromDictTests(unittest.TestCase):
     def test_reads_a_bundle_rule_verbatim(self):
@@ -130,6 +239,18 @@ class FromDictTests(unittest.TestCase):
     def test_missing_lists_default_to_empty(self):
         rule = AllowRule.from_dict({"host": "example.com"})
         self.assertEqual((rule.methods, rule.paths, rule.allow), ((), (), ()))
+
+    def test_reads_a_v2_rules_ports(self):
+        rule = AllowRule.from_dict(
+            {"host": "registry.internal", "https_ports": [8443], "http_ports": [5000]}
+        )
+        self.assertEqual((rule.https_ports, rule.http_ports), ((8443,), (5000,)))
+        self.assertEqual(AllowRule.from_dict({"host": "a.test"}).https_ports, ())
+
+    def test_refuses_a_port_that_is_not_one(self):
+        for bad in (0, 70000, "443", True):
+            with self.subTest(repr(bad)), self.assertRaises(ValueError):
+                AllowRule.from_dict({"host": "a.test", "https_ports": [bad]})
 
 
 if __name__ == "__main__":

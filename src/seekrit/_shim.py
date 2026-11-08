@@ -32,7 +32,7 @@ from typing import (
 )
 
 from ._client import Client
-from ._policy import AllowRule, evaluate, narrow, rules_from_allow
+from ._policy import AllowRule, evaluate, narrow, rules_from_allow, transport_of
 from ._scope import Scope, current_scope
 from ._substitute import Lookup, has_placeholder, substitute
 from .errors import SeekritError, SeekritSubstitutionError
@@ -258,10 +258,15 @@ class Rewriter:
         host = request.url.host
         path = request.url.path
         method = request.method.upper()
+        # The caller picked this URL, so the scheme and port it dials are part of
+        # the question — the proxy's forward-plane reading.
+        transport = transport_of(request.url.scheme, request.url.port)
         injected: set = set()
 
         def lookup(name: str) -> Lookup:
-            verdict = evaluate(rules, host=host, method=method, path=path, secret=name)
+            verdict = evaluate(
+                rules, host=host, method=method, path=path, secret=name, transport=transport
+            )
             if verdict.decision != "allow":
                 return Lookup.denied(verdict.decision)
             if name not in values:
