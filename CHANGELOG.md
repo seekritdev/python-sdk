@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.13.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.12.0...sdk-python-v0.13.0) (2026-11-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* **sdk:** enforce rule ports in the JS and Python SDKs ([#562](https://github.com/mileszim/seekrit/issues/562))
+
+### Features
+
+* **sdk:** enforce rule ports in the JS and Python SDKs ([#562](https://github.com/mileszim/seekrit/issues/562)) ([f9264ce](https://github.com/mileszim/seekrit/commit/f9264ce3300ee60b74cf6dd52d74af37e09c2cd3))
+
 ## [0.12.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.11.0...sdk-python-v0.12.0) (2026-10-27)
 
 
