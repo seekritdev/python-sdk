@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.13.0...sdk-python-v0.14.0) (2026-11-11)
+
+
+### Features
+
+* **site:** one category sentence across site, llms.txt and package descriptions ([#580](https://github.com/mileszim/seekrit/issues/580)) ([7a3eb05](https://github.com/mileszim/seekrit/commit/7a3eb055806625b225f3f86491b54969a8c9fdda))
+
 ## [0.13.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.12.0...sdk-python-v0.13.0) (2026-11-08)
 
 

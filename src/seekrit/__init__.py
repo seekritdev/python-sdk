@@ -23,7 +23,7 @@ from .errors import (
     SeekritSubstitutionError,
 )
 
-__version__ = "0.13.0"  # x-release-please-version
+__version__ = "0.14.0"  # x-release-please-version
 
 __all__ = [
     "Client",
