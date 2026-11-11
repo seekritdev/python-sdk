@@ -1,6 +1,7 @@
 # seekrit — Python SDK
 
-Read-path SDK for [seekrit](https://seekrit.dev). Authenticate with a service
+Read-path SDK for [seekrit](https://seekrit.dev), a zero-knowledge secrets
+manager and credential broker for AI agents. Authenticate with a service
 token, resolve your environment, and get **decrypted** secrets — the API only
 ever returns ciphertext; decryption happens in your process.
 
