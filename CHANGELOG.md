@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.14.0...sdk-python-v0.15.0) (2026-11-12)
+
+
+### Features
+
+* substitute placeholders inside Authorization: Basic credentials ([#593](https://github.com/mileszim/seekrit/issues/593)) ([b0cf4b6](https://github.com/mileszim/seekrit/commit/b0cf4b66dc23d365667a591664c5307088a1954a))
+
 ## [0.14.0](https://github.com/mileszim/seekrit/compare/sdk-python-v0.13.0...sdk-python-v0.14.0) (2026-11-11)
 
 
