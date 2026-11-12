@@ -13,10 +13,30 @@ import json
 import unittest
 from pathlib import Path
 
-from seekrit._substitute import Lookup, has_placeholder, substitute
+from seekrit._substitute import (
+    Lookup,
+    has_placeholder,
+    header_has_placeholder,
+    substitute,
+    substitute_header,
+)
 from seekrit.errors import SeekritSubstitutionError
 
 VECTORS = json.loads((Path(__file__).parent.parent / "testdata" / "vectors.json").read_text())
+
+
+def _run(case, lookup):
+    """A ``header`` case is that header's value, through the header entry point
+    (which also sees inside an ``Authorization: Basic`` credential)."""
+    if "header" in case:
+        return substitute_header(case["header"], case["input"], lookup)
+    return substitute(case["input"], lookup)
+
+
+def _found(case):
+    if "header" in case:
+        return header_has_placeholder(case["header"], case["input"])
+    return has_placeholder(case["input"])
 
 
 def _lookup_for(case):
@@ -37,6 +57,7 @@ def _lookup_for(case):
 class SubstitutionVectorTests(unittest.TestCase):
     def test_fixture_carries_cases(self):
         self.assertGreater(len(VECTORS["substitution"]["cases"]), 0)
+        self.assertTrue(any("header" in c for c in VECTORS["substitution"]["cases"]))
 
     def test_every_vector_matches(self):
         for case in VECTORS["substitution"]["cases"]:
@@ -45,11 +66,11 @@ class SubstitutionVectorTests(unittest.TestCase):
                 expected_error = case.get("error")
                 if expected_error:
                     with self.assertRaises(SeekritSubstitutionError) as caught:
-                        substitute(case["input"], lookup)
+                        _run(case, lookup)
                     self.assertEqual(caught.exception.code, expected_error["code"])
                     self.assertEqual(caught.exception.secret_name, expected_error["name"])
                     continue
-                text, names = substitute(case["input"], lookup)
+                text, names = _run(case, lookup)
                 self.assertEqual(text, case["expected"])
                 self.assertEqual(names, case["names"])
 
@@ -63,7 +84,7 @@ class SubstitutionVectorTests(unittest.TestCase):
     def test_has_placeholder_agrees_with_substitute(self):
         for case in VECTORS["substitution"]["cases"]:
             with self.subTest(case["name"]):
-                found = has_placeholder(case["input"])
+                found = _found(case)
                 if case.get("error"):
                     self.assertTrue(found, "a case that raises must contain a placeholder")
                     continue

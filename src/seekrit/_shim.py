@@ -34,7 +34,7 @@ from typing import (
 from ._client import Client
 from ._policy import AllowRule, evaluate, narrow, rules_from_allow, transport_of
 from ._scope import Scope, current_scope
-from ._substitute import Lookup, has_placeholder, substitute
+from ._substitute import Lookup, has_placeholder, header_has_placeholder, substitute, substitute_header
 from .errors import SeekritError, SeekritSubstitutionError
 
 #: Headers the HTTP client must recompute when we change the body.
@@ -238,8 +238,8 @@ class Rewriter:
         """Whether this request carries a placeholder anywhere we scan."""
         if has_placeholder(str(request.url)):
             return True
-        for _, value in request.headers.multi_items():
-            if has_placeholder(value):
+        for name, value in request.headers.multi_items():
+            if header_has_placeholder(name, value):
                 return True
         body = self._body(request)
         return body is not None and has_placeholder(body)
@@ -279,7 +279,7 @@ class Rewriter:
 
         headers: List[Tuple[str, str]] = []
         for name, value in request.headers.multi_items():
-            headers.append((name, substitute(value, lookup)[0]))
+            headers.append((name, substitute_header(name, value, lookup)[0]))
 
         body = self._body(request)
         new_body: Optional[bytes] = None

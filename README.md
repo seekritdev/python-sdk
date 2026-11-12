@@ -134,7 +134,9 @@ still writes a secret into the notebook. Strip outputs before committing.
 ## Hold a placeholder instead of a key
 
 `seekrit.transport` substitutes `{{seekrit:NAME}}` placeholders into outbound
-requests, so a provider key is never in your source, your `.env`, or
+requests — URL, headers (including inside an `Authorization: Basic`
+credential, so `httpx.BasicAuth("user", "{{seekrit:API_PASSWORD}}")` works), and
+body — so a provider key is never in your source, your `.env`, or
 `os.environ`:
 
 ```bash

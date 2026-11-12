@@ -17,8 +17,10 @@ The rules are pinned by the shared golden fixture (``testdata/vectors.json``,
 
 from __future__ import annotations
 
+import base64
+import binascii
 import re
-from typing import Callable, List, NamedTuple, Tuple
+from typing import Callable, List, NamedTuple, Optional, Tuple
 
 from .errors import SeekritSubstitutionError
 
@@ -100,6 +102,83 @@ def substitute(text: str, lookup: Callable[[str], Lookup]) -> Tuple[str, List[st
         i = close + len(CLOSE)
 
     return "".join(out), sorted(names)
+
+
+def substitute_header(
+    name: str, value: str, lookup: Callable[[str], Lookup]
+) -> Tuple[str, List[str]]:
+    """:func:`substitute` for one request header's value — plus the one place a
+    client encodes a placeholder before sending it.
+
+    git over HTTPS (and anything else speaking HTTP Basic) sends
+    ``user:password`` base64-encoded, so
+    ``https://x-access-token:{{seekrit:GITHUB_TOKEN}}@github.com`` leaves the
+    client as ``Authorization: Basic eC1hY2Nlc3Mt…`` and the marker is invisible
+    to a text scan. For exactly that shape — an ``Authorization`` or
+    ``Proxy-Authorization`` value of ``Basic`` (any case), one or more spaces,
+    then canonical padded base64 that decodes to UTF-8 — the decoded text goes
+    through the same ``lookup`` and is re-encoded, keeping the scheme and
+    spacing as sent. A denied or unknown name raises exactly as it does anywhere
+    else.
+
+    Every other value, a Basic credential failing any of those checks included,
+    is substituted as plain text — so ``Basic {{seekrit:GIT_BASIC}}`` still
+    works, and no other header or scheme is ever base64-decoded. Pinned, like
+    the rest, by the ``header`` cases of the shared vectors
+    (``apps/proxy/src/substitute.rs`` is the reference).
+
+    Raises:
+        SeekritSubstitutionError: on a denied or unresolved name.
+    """
+    basic = _basic_credential(name, value)
+    if basic is None:
+        return substitute(value, lookup)
+    prefix, decoded = basic
+    text, names = substitute(decoded, lookup)
+    if not names:
+        # Nothing injected: forward the credential exactly as it arrived.
+        return value, names
+    return prefix + base64.b64encode(text.encode("utf-8")).decode("ascii"), names
+
+
+def header_has_placeholder(name: str, value: str) -> bool:
+    """Whether a header value carries a placeholder :func:`substitute_header`
+    would act on — :func:`has_placeholder`, seeing inside a Basic credential."""
+    basic = _basic_credential(name, value)
+    return has_placeholder(value if basic is None else basic[1])
+
+
+_CREDENTIAL_HEADERS = frozenset(("authorization", "proxy-authorization"))
+# `Basic` in any ASCII case (no Unicode case folding), then one or more spaces.
+_BASIC_PREFIX = re.compile(r"\A[Bb][Aa][Ss][Ii][Cc] +")
+# Standard alphabet (RFC 4648 §4), padded. Length and padding bits are checked
+# by re-encoding, the same way every other implementation checks them.
+_BASE64_SHAPE = re.compile(r"\A[A-Za-z0-9+/]+={0,2}\Z")
+
+
+def _basic_credential(name: str, value: str) -> Optional[Tuple[str, str]]:
+    """``(scheme_and_spaces, decoded_text)`` for a Basic credential in a header
+    that carries one; ``None`` for anything to be scanned as text."""
+    if name.lower() not in _CREDENTIAL_HEADERS:
+        return None
+    match = _BASIC_PREFIX.match(value)
+    if match is None:
+        return None
+    token = value[match.end() :]
+    if len(token) % 4 or not _BASE64_SHAPE.match(token):
+        return None
+    try:
+        raw = base64.b64decode(token, validate=True)
+    except (binascii.Error, ValueError):
+        return None
+    # Canonical only: a lenient decoder accepts stray padding bits, and every
+    # leniency is a different answer to "is this a credential?" than the proxy's.
+    if base64.b64encode(raw).decode("ascii") != token:
+        return None
+    try:
+        return match.group(0), raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return None
 
 
 def has_placeholder(text: str) -> bool:

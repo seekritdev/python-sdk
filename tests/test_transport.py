@@ -9,6 +9,7 @@ Skipped when the ``httpx`` extra is not installed (``pip install
 """
 
 import asyncio
+import base64
 import unittest
 
 try:
@@ -85,6 +86,20 @@ class SubstitutionTests(unittest.TestCase):
             ],
         )
 
+    def test_substitutes_inside_a_basic_credential(self):
+        # httpx's own BasicAuth base64-encodes `user:password` before the
+        # transport sees the request — the same thing git does over HTTPS.
+        seen, client = self._client(allow={"api.openai.com": ["OPENAI_API_KEY"]})
+        response = client.get(
+            "https://api.openai.com/v1/models",
+            auth=("user", "{{seekrit:OPENAI_API_KEY}}"),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            seen["headers"]["authorization"],
+            "Basic " + base64.b64encode(b"user:sk-live-abc").decode("ascii"),
+        )
+
     def test_a_request_without_a_placeholder_does_not_resolve(self):
         resolver = FakeClient()
         seen, client = self._client(
@@ -156,6 +171,22 @@ class RefusalTests(unittest.TestCase):
         response = client.post(
             "https://api.openai.com/v1/chat/completions",
             headers={"authorization": "Bearer {{seekrit:STRIPE_SECRET_KEY}}"},
+        )
+        self._assert_refused(response, "denied", "STRIPE_SECRET_KEY")
+        self.assertEqual(seen, {}, "the request must never reach the upstream")
+
+    def test_a_basic_credential_naming_a_denied_secret_is_refused(self):
+        seen, mock = recorder()
+        client = httpx.Client(
+            transport=SeekritTransport(
+                allow={"api.openai.com": ["OPENAI_API_KEY"]},
+                client=FakeClient(),
+                transport=mock,
+            )
+        )
+        response = client.get(
+            "https://api.openai.com/v1/models",
+            auth=("user", "{{seekrit:STRIPE_SECRET_KEY}}"),
         )
         self._assert_refused(response, "denied", "STRIPE_SECRET_KEY")
         self.assertEqual(seen, {}, "the request must never reach the upstream")
